@@ -28,26 +28,91 @@ class OntowikiCommandLineInterface {
     protected $config;
     /* the parsed config of the active wiki */
     protected $wikiConfig;
+    /* the temp. filename for the input triple */
+    protected $tmpTripleLocation = false;
+    /* the input models as one big rdf/php structure */
+    protected $inputModel = false;
+    /* The current command in the execution queue */
+    protected $currentCommand;
 
     public function __construct() {
         // load pear packages
-        $this->initPackages();
+        $this->checkPackages();
         // check command line parameters
-        $this->initCommandLineArguments();
+        $this->checkCommandLineArguments();
         // check and initialize config file
-        $this->initConfig();
+        $this->checkConfig();
         // check and initialize addionally tools
-        $this->initTools();
+        $this->checkTools();
+        // check and initialize addionally tools
+        $this->checkInputModels();
 
         $this->echoDebug('Everything ok, start to execute commands:');
         foreach ((array) $this->args->getValue('execute') as $command) {
+            $this->currentCommand = $command;
             $result = $this->executeJsonRpc($command);
             if ($result) {
                 $this->renderResult ($result);
             }
         }
+
+        // delete the temp file
+        if ($this->tmpTripleLocation) {
+            unlink($this->tmpTripleLocation);
+        }
     }
 
+    /*
+     * call redlands rapper to create rdf/json
+     *
+     * 
+     */
+    protected function checkInputModels() {
+        if (!$this->args->getValue('input')) {
+            return;
+        }
+
+	if (is_array($this->args->getValue('input'))) {
+            $files = $this->args->getValue('input');
+        } else {
+            $files = array ( 0 => $this->args->getValue('input') );
+        }
+
+        $tmpTripleLocation = tempnam ('/tmp', 'owcli-merged-input-');
+        $this->tmpTripleLocation = $tmpTripleLocation;
+
+	foreach ($files as $inputFile) {
+            $this->echoDebug("checkInputModels: input file is now $inputFile");
+
+            // we need to temp-save stdin models first
+            if ($inputFile == '-') {
+                $inputFile = tempnam ('/tmp', 'owcli-stdin-');
+                $deleteFile = $inputFile;
+                $tmpStdInHandle = fopen ($inputFile, "w");
+                if ( !STDIN ) {
+                    // if there is no piped input, ignore it
+                    $this->echoDebug('checkInputModels: Can\'t open STDIN (ignored)');
+                    break;
+                } else {
+                    while (!feof(STDIN)) {
+                        fwrite($tmpStdInHandle, fgets(STDIN, 4096));
+                    }
+                    fclose($tmpStdInHandle);
+                }
+            }
+
+            // all input files are merged to one big ntriple file
+            `rapper $inputFile -q -i guess -o ntriples >>$tmpTripleLocation`;
+
+            // delete the temp file for the STDIN input model
+            if ($deleteFile) {
+                unlink($deleteFile);
+                unset ($deleteFile);
+            }
+	}
+
+        $this->inputModel = json_decode(`rapper $tmpTripleLocation -q -i ntriples -o json`, true);
+    }
 
     /*
      * Renders a rpc result
@@ -86,6 +151,13 @@ class OntowikiCommandLineInterface {
                         } else {
                             // table output for multidimensional arrays
                             echo $this->renderTable($result);
+                        }
+                    } elseif ( is_bool($result) ) {
+                        // all simple result type are printed with echo
+                        if ($result == true) {
+                            echo $this->currentCommand .': success' . PHP_EOL;
+                        } else {
+                            echo $this->currentCommand .': failed' . PHP_EOL;
                         }
                     } elseif ( (is_numeric($result)) || (is_string($result)) ) {
                         // all simple result type are printed with echo
@@ -164,6 +236,9 @@ class OntowikiCommandLineInterface {
         #$postdata = '{"method": "getAvailableModels", "params": {"uri": "yourmodeluri"}, "id": 33}';
         $postdata['method'] = $rpcMethod;
         $postdata['params']['modelIri'] = $this->args->getValue('model');
+
+        $postdata['params']['inputModel'] = $this->inputModel;
+
         if ($rpcParameter) {
             $postdata['params']['p1'] = $rpcParameter;
         }
@@ -231,7 +306,7 @@ class OntowikiCommandLineInterface {
     /*
      * Load required Packages
      */
-    protected function initPackages() {
+    protected function checkPackages() {
 	foreach ($this->pearPackages as $package) {
             if (!require_once($package) ) {
                 $this->echoError("PEAR package $package needed!");
@@ -243,7 +318,7 @@ class OntowikiCommandLineInterface {
     /*
      * Check for addionally tools
      */
-    protected function initTools() {
+    protected function checkTools() {
         $rapper = `which rapper`;
         #echo $rapper;
     }
@@ -251,7 +326,7 @@ class OntowikiCommandLineInterface {
     /*
      * Generate command line parameter array for Console_Getargs
      */
-    protected function initCommandLineArguments() {
+    protected function checkCommandLineArguments() {
 
         // Some default parameter values can be overwritten by variables
         $defaultModel = getenv('OWMODEL') ? getenv('OWMODEL') : 'http://localhost/OntoWiki/Config/';
@@ -282,9 +357,7 @@ class OntowikiCommandLineInterface {
 
             'input' => array(
                 'short' => 'i',
-                'min' => 1,
                 'max' => -1,
-                'default' => "-",
                 'desc' => 'input model file (- for STDIN)'
             ),
 
@@ -353,7 +426,7 @@ class OntowikiCommandLineInterface {
     /**
      * Load and check config file
      */
-    protected function initConfig() {
+    protected function checkConfig() {
         $file = $this->args->getValue('config');
 	$config = @parse_ini_file($file, TRUE);
 
