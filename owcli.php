@@ -34,6 +34,10 @@ class OntowikiCommandLineInterface {
     protected $inputModel = false;
     /* The current command in the execution queue */
     protected $currentCommand;
+    /* The current command ID in the execution queue */
+    protected $currentCommandId = 0;
+    /* array of smbs for every rpc server */
+    protected $smd = array();
 
     public function __construct() {
         // load pear packages
@@ -172,6 +176,11 @@ class OntowikiCommandLineInterface {
         }
     }
 
+    /*
+     * Renders a table rpc result (e.g. for sparql results)
+     *
+     * @param string $result  the result from an executeJsonRpc call
+     */
     protected function renderTable ($result) {
         $table = new Console_Table;
 
@@ -203,19 +212,31 @@ class OntowikiCommandLineInterface {
    }
 
     /*
+     * Retrieve a Service Mapping Description from the Server
+     *
+     * @param string $serverUrl  the URL of the JSONRPC Server
+     */
+    protected function getSMD($serverUrl) {
+        $smb = curl_init();
+        curl_setopt ($smb, CURLOPT_URL, $serverUrl . '?REQUEST_METHOD');
+        curl_setopt ($smb, CURLOPT_USERAGENT, self::NAME . ' ' . self::VERSION);
+        curl_setopt ($smb, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt ($smb, CURLOPT_CONNECTTIMEOUT, 30);
+        $content = curl_exec($smb);
+        $recodedContent = json_decode($content);
+        if ($recodedContent) {
+            return $recodedContent;
+        } else {
+            return false;
+        }
+    }
+
+    /*
      * Execute a specific remote procedure and return the response string
      *
      * @param string $command  the remote procedure
      */
     protected function executeJsonRpc ($command) {
-        $this->echoDebug('starting jsonrpc: ' . $command);
-
-        // create a new cURL resource
-        $rpc = curl_init();
-        curl_setopt ($rpc, CURLOPT_USERAGENT, self::NAME . ' ' . self::VERSION);
-        curl_setopt ($rpc, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt ($rpc, CURLOPT_CONNECTTIMEOUT, 30);
-
         // checks and matches the command
         $pattern = '/^([a-z]+)\:([a-zA-Z]+)(\:(.*))?$/';
         preg_match($pattern, $command, $matches);
@@ -223,27 +244,89 @@ class OntowikiCommandLineInterface {
             $this->echoError('The command "'.$command.'" is not valid by regular expression.');
             return false;
         } else {
-            $zendAction = $matches[1];
+            $serverAction = $matches[1];
             $rpcMethod = $matches[2];
             $rpcParameter = $matches[4];
         }
+        $this->echoDebug("starting jsonrpc: $serverAction:$rpcMethod");
+        $this->currentCommandId++;
+
+        // create a new cURL resource
+        $rpc = curl_init();
+        curl_setopt ($rpc, CURLOPT_USERAGENT, self::NAME . ' ' . self::VERSION);
+        curl_setopt ($rpc, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt ($rpc, CURLOPT_CONNECTTIMEOUT, 30);
 
         // define jsonrpc server URL
-        $serveruri = $this->wikiConfig['baseuri'] . '/jsonrpc/'.$zendAction;
-        curl_setopt ($rpc, CURLOPT_URL, $serveruri);
+        $serverUrl = $this->wikiConfig['baseuri'] . '/jsonrpc/'.$serverAction;
+        curl_setopt ($rpc, CURLOPT_URL, $serverUrl);
 
-        // define the post data
-        #$postdata = '{"method": "getAvailableModels", "params": {"uri": "yourmodeluri"}, "id": 33}';
-        $postdata['method'] = $rpcMethod;
-        $postdata['params']['modelIri'] = $this->args->getValue('model');
+        // retrieve Service Mapping Description (SMD) (if not already done)
+        if (!$this->smd[$serverAction]) {
+            $this->smd[$serverAction] = $this->getSMD($serverUrl);
+        }
+        $serversmd = $this->smd[$serverAction];
+        if ($serversmd->services->$rpcMethod) {
+            $methodsmb = $serversmd->services->$rpcMethod;
+        } else {
+            $this->echoError('The command "'.$rpcMethod.'" has no valid Service Mapping Description from the server.');
+            return false;
+        }
+        $parameters = $methodsmb->parameters;
+        #var_dump($parameters);
 
-        $postdata['params']['inputModel'] = $this->inputModel;
-
+        // split parameters by explode to use it in procedure parameters
         if ($rpcParameter) {
-            $postdata['params']['p1'] = $rpcParameter;
+            $rpcParameterArray = explode(':', $rpcParameter);
+            #var_dump($rpcParameterArray);
         }
 
-        $postdata['id'] = 1;
+        // define the post data; based on the SMD
+        $postdata['method'] = $rpcMethod;
+        foreach ($parameters as $parameter) {
+            $key = $parameter->name;
+            unset ($value);
+            switch ($key) {
+                case 'modelIri':
+                    $value = $this->args->getValue('model');
+                    break;
+
+                case 'inputModel':
+                    if ($this->inputModel) {
+                        $value = $this->inputModel;
+                    } else {
+                        $this->echoError("The command '$command' needs a model input.");
+                        return false;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+            
+            if ($value) {
+                $postdata['params'][$key] = $value;
+                $this->echoDebug("Use internal value for parameter '$key'");
+            } elseif ($parameter->default) {
+                $value = $parameter->default;
+                $postdata['params'][$key] = $value;
+                $this->echoDebug("Use default value '$value' for parameter '$key'");
+            } elseif (count($rpcParameterArray) > 0) {
+                // take the first array element
+                $value = reset($rpcParameterArray);
+                // unset this element from the parameter array
+                $valueKeys = array_keys ($rpcParameterArray, $value);
+                unset($rpcParameterArray[$valueKeys[0]]);
+                // set value as parameter
+                $postdata['params'][$key] = $value;
+                $this->echoDebug("Use given value '$value' for parameter '$key'");
+            } else {
+                $this->echoError("The command '$serverAction:$rpcMethod' needs a value for parameter '$key' but no more values given.");
+                return false;
+            }
+        }
+
+        $postdata['id'] = $this->currentCommandId;
         $postdata = json_encode($postdata);
         $this->echoDebug('postdata: ' . $postdata);
         curl_setopt ($rpc, CURLOPT_POST, true);
@@ -273,7 +356,7 @@ class OntowikiCommandLineInterface {
             $decodedResponse = json_decode($response, true);
 
             if (!$response) {
-                $this->echoError("Error: no response on serveruri $serveruri");
+                $this->echoError("Error: no response on serveruri $serverUrl");
                 die();
             } elseif (!is_array($decodedResponse)) {
                 $this->echoError('The server response was no valid json:');
