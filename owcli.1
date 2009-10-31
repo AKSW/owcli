@@ -24,7 +24,7 @@ Drop a model (delete statements, popularities, etc.):
 .B owcli -m http://localhost/model1# \-e store:drop
 .TP
 Create a new Model and add tripels from a file:
-.B owcli -m http://localhost/model1# \-e store:create
+.B owcli -m http://localhost/model1# \-e store:create model:add -i file.rdf
 .TP
 Export the default model, put it to cwm and add the cwm output (e.g. additions from rules etc.):
 .B owcli \-model:export | cwm ...  | owcli \-e model:add

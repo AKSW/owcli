@@ -24,8 +24,7 @@ uninstall:
 
 dist:
 	mkdir -p owcli-$(VERSION)
-	cp -R ChangeLog dot.owcli INSTALL Makefile owcli.1 owcli.bash_completion owcli.php rdfapi-php README owcli-$(VERSION)
-	rm -rf `find owcli-$(VERSION) -name .svn`
+	cp -R ChangeLog dot.owcli INSTALL Makefile owcli.1 owcli.bash_completion owcli.php README owcli-$(VERSION)
 	tar cjf owcli-$(VERSION).tar.bz2 owcli-$(VERSION)
 	rm -rf owcli-$(VERSION)
 
