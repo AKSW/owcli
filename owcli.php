@@ -38,6 +38,51 @@ class OntowikiCommandLineInterface {
     protected $currentCommandId = 0;
     /* array of smbs for every rpc server */
     protected $smd = array();
+    /* messages for curl http status codes (http://de.php.net/manual/en/function.curl-getinfo.php) */
+    protected $http_codes = array (
+        100 => "Continue",
+        101 => "Switching Protocols",
+        200 => "OK",
+        201 => "Created",
+        202 => "Accepted",
+        203 => "Non-Authoritative Information",
+        204 => "No Content",
+        205 => "Reset Content",
+        206 => "Partial Content",
+        300 => "Multiple Choices",
+        301 => "Moved Permanently",
+        302 => "Found",
+        303 => "See Other",
+        304 => "Not Modified",
+        305 => "Use Proxy",
+        306 => "(Unused)",
+        307 => "Temporary Redirect",
+        400 => "Bad Request",
+        401 => "Unauthorized",
+        402 => "Payment Required",
+        403 => "Forbidden",
+        404 => "Not Found",
+        405 => "Method Not Allowed",
+        406 => "Not Acceptable",
+        407 => "Proxy Authentication Required",
+        408 => "Request Timeout",
+        409 => "Conflict",
+        410 => "Gone",
+        411 => "Length Required",
+        412 => "Precondition Failed",
+        413 => "Request Entity Too Large",
+        414 => "Request-URI Too Long",
+        415 => "Unsupported Media Type",
+        416 => "Requested Range Not Satisfiable",
+        417 => "Expectation Failed",
+        500 => "Internal Server Error",
+        501 => "Not Implemented",
+        502 => "Bad Gateway",
+        503 => "Service Unavailable",
+        504 => "Gateway Timeout",
+        505 => "HTTP Version Not Supported",
+    );
+
 
     public function __construct() {
         // load pear packages
@@ -225,6 +270,11 @@ class OntowikiCommandLineInterface {
         $content = curl_exec($smb);
         $recodedContent = json_decode($content);
         if ($recodedContent) {
+            $info = curl_getinfo($smb);
+            if ($info['http_code'] != 200) {
+                $this->echoError('Error on getSMD: '. $info['http_code'].' '. $this->http_codes[$info['http_code']]);
+                return false;
+            }
             return $recodedContent;
         } else {
             return false;
@@ -241,7 +291,7 @@ class OntowikiCommandLineInterface {
         $pattern = '/^([a-z]+)\:([a-zA-Z]+)(\:(.*))?$/';
         preg_match($pattern, $command, $matches);
         if (count($matches) == 0 ) {
-            $this->echoError('The command "'.$command.'" is not valid by regular expression.');
+            $this->echoError('The command "'.$command.'" is not a valid owcli command.');
             return false;
         } else {
             $serverAction = $matches[1];
@@ -307,10 +357,6 @@ class OntowikiCommandLineInterface {
             if ($value) {
                 $postdata['params'][$key] = $value;
                 $this->echoDebug("Use internal value for parameter '$key'");
-            } elseif ($parameter->default) {
-                $value = $parameter->default;
-                $postdata['params'][$key] = $value;
-                $this->echoDebug("Use default value '$value' for parameter '$key'");
             } elseif (count($rpcParameterArray) > 0) {
                 // take the first array element
                 $value = reset($rpcParameterArray);
@@ -320,6 +366,10 @@ class OntowikiCommandLineInterface {
                 // set value as parameter
                 $postdata['params'][$key] = $value;
                 $this->echoDebug("Use given value '$value' for parameter '$key'");
+            } elseif ($parameter->default) {
+                $value = $parameter->default;
+                $postdata['params'][$key] = $value;
+                $this->echoDebug("Use default value '$value' for parameter '$key'");
             } else {
                 $this->echoError("The command '$serverAction:$rpcMethod' needs a value for parameter '$key' but no more values given.");
                 return false;
@@ -353,6 +403,13 @@ class OntowikiCommandLineInterface {
             $info = curl_getinfo($rpc);
             $this->echoDebug('Took ' . $info['total_time'] . ' seconds to send a request to ' . $info['url']);
             curl_close($rpc);
+
+            if ($info['http_code'] != 200) {
+                $this->echoError('Error on executeJsonRpc: '. $info['http_code'].' '. $this->http_codes[$info['http_code']]);
+                die();
+            }
+            
+
             $decodedResponse = json_decode($response, true);
 
             if (!$response) {
