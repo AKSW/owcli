@@ -105,7 +105,7 @@ class OntowikiCommandLineInterface {
         }
 
         $this->echoDebug('selected model: '.$model);
-        $this->selectModel = $model;
+        $this->selectedModel = $model;
     }
 
     /*
@@ -333,7 +333,7 @@ class OntowikiCommandLineInterface {
             unset ($value);
             switch ($key) {
                 case 'modelIri':
-                    $value = $this->selectModel;
+                    $value = $this->selectedModel;
                     break;
 
                 case 'inputModel':
