@@ -2,6 +2,7 @@
 baseuri = "http://localhost/OntoWiki/"
 user = Admin
 password = "pass"
+defaultmodel = "http://example.org/"
 
 [demo]
 baseuri = "http://demo.ontowiki.net"

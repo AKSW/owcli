@@ -32,6 +32,8 @@ class OntowikiCommandLineInterface {
     protected $tmpTripleLocation = false;
     /* the input models as one big rdf/php structure */
     protected $inputModel = false;
+    /* The target model of this owcli run */
+    protected $selectedModel = false;
     /* The current command in the execution queue */
     protected $currentCommand;
     /* The current command ID in the execution queue */
@@ -40,47 +42,18 @@ class OntowikiCommandLineInterface {
     protected $smd = array();
     /* messages for curl http status codes (http://de.php.net/manual/en/function.curl-getinfo.php) */
     protected $http_codes = array (
-        100 => "Continue",
-        101 => "Switching Protocols",
-        200 => "OK",
-        201 => "Created",
-        202 => "Accepted",
-        203 => "Non-Authoritative Information",
-        204 => "No Content",
-        205 => "Reset Content",
-        206 => "Partial Content",
-        300 => "Multiple Choices",
-        301 => "Moved Permanently",
-        302 => "Found",
-        303 => "See Other",
-        304 => "Not Modified",
-        305 => "Use Proxy",
-        306 => "(Unused)",
-        307 => "Temporary Redirect",
-        400 => "Bad Request",
-        401 => "Unauthorized",
-        402 => "Payment Required",
-        403 => "Forbidden",
-        404 => "Not Found",
-        405 => "Method Not Allowed",
-        406 => "Not Acceptable",
-        407 => "Proxy Authentication Required",
-        408 => "Request Timeout",
-        409 => "Conflict",
-        410 => "Gone",
-        411 => "Length Required",
-        412 => "Precondition Failed",
-        413 => "Request Entity Too Large",
-        414 => "Request-URI Too Long",
-        415 => "Unsupported Media Type",
-        416 => "Requested Range Not Satisfiable",
-        417 => "Expectation Failed",
-        500 => "Internal Server Error",
-        501 => "Not Implemented",
-        502 => "Bad Gateway",
-        503 => "Service Unavailable",
-        504 => "Gateway Timeout",
-        505 => "HTTP Version Not Supported",
+        100 => "Continue", 101 => "Switching Protocols", 200 => "OK", 201 => "Created",
+        202 => "Accepted", 203 => "Non-Authoritative Information", 204 => "No Content",
+        205 => "Reset Content", 206 => "Partial Content", 300 => "Multiple Choices",
+        301 => "Moved Permanently", 302 => "Found", 303 => "See Other", 304 => "Not Modified",
+        305 => "Use Proxy", 306 => "(Unused)", 307 => "Temporary Redirect", 400 => "Bad Request",
+        401 => "Unauthorized", 402 => "Payment Required", 403 => "Forbidden", 404 => "Not Found",
+        405 => "Method Not Allowed", 406 => "Not Acceptable", 407 => "Proxy Authentication Required",
+        408 => "Request Timeout", 409 => "Conflict", 410 => "Gone", 411 => "Length Required",
+        412 => "Precondition Failed", 413 => "Request Entity Too Large", 414 => "Request-URI Too Long",
+        415 => "Unsupported Media Type", 416 => "Requested Range Not Satisfiable", 417 => "Expectation Failed",
+        500 => "Internal Server Error", 501 => "Not Implemented", 502 => "Bad Gateway",
+        503 => "Service Unavailable", 504 => "Gateway Timeout", 505 => "HTTP Version Not Supported",
     );
 
 
@@ -93,6 +66,8 @@ class OntowikiCommandLineInterface {
         $this->checkConfig();
         // check and initialize addionally tools
         $this->checkTools();
+        // select the model to work with
+        $this->selectModel();
         // check and initialize addionally tools
         $this->checkInputModels();
 
@@ -112,9 +87,29 @@ class OntowikiCommandLineInterface {
     }
 
     /*
+     * selects a model from different config options
+     */
+    protected function selectModel() {
+        global $argv;
+        // this is always set (cause of default model)
+        $model = $this->args->getValue('model');
+
+        // if a defaultmodel is set, use this (unless -m is given)
+        if (isset($this->wikiConfig['defaultmodel'])) {
+            $model = $this->wikiConfig['defaultmodel'];
+        }
+
+        // if model parameter is explicit given, of course use it ...
+        if (array_search('-m' , $argv)) {
+            $model = $this->args->getValue('model');
+        }
+
+        $this->echoDebug('selected model: '.$model);
+        $this->selectModel = $model;
+    }
+
+    /*
      * call redlands rapper to create rdf/json
-     *
-     * 
      */
     protected function checkInputModels() {
         if (!$this->args->getValue('input')) {
@@ -338,7 +333,7 @@ class OntowikiCommandLineInterface {
             unset ($value);
             switch ($key) {
                 case 'modelIri':
-                    $value = $this->args->getValue('model');
+                    $value = $this->selectModel;
                     break;
 
                 case 'inputModel':
