@@ -35,7 +35,7 @@ class OntowikiCommandLineInterface {
     /* The target model of this owcli run */
     protected $selectedModel = false;
     /* The command execution queue */
-    protected $commandList;
+    protected $commandList = array();
     /* The current command in the execution queue */
     protected $currentCommand;
     /* The current command ID in the execution queue */
@@ -583,10 +583,15 @@ class OntowikiCommandLineInterface {
 
         // create command list, use shortcut, if available
         if ($this->args->isDefined('listModels')) {
-            $this->commandList = array('store:listModels');
-        } elseif ( count($this->args->getValue('execute')) > 0 ) {
-            $this->commandList = (array) $this->args->getValue('execute');
-        } else {
+            $this->commandList[] = 'store:listModels';
+        }
+        // append -e commands to the end to the command queue
+        if ( count((array) $this->args->getValue('execute')) > 0 ) {
+            foreach ((array) $this->args->getValue('execute') as $command) {
+                $this->commandList[] = $command;
+            }
+        }
+        if ( count($this->commandList) == 0 ) {
             $this->echoError('I don\'t know what to do. Please try -l or -e ... ');
             die();
         }
