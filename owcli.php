@@ -34,6 +34,8 @@ class OntowikiCommandLineInterface {
     protected $inputModel = false;
     /* The target model of this owcli run */
     protected $selectedModel = false;
+    /* The command execution queue */
+    protected $commandList;
     /* The current command in the execution queue */
     protected $currentCommand;
     /* The current command ID in the execution queue */
@@ -72,7 +74,7 @@ class OntowikiCommandLineInterface {
         $this->checkInputModels();
 
         $this->echoDebug('Everything ok, start to execute commands:');
-        foreach ((array) $this->args->getValue('execute') as $command) {
+        foreach ((array) $this->commandList as $command) {
             $this->currentCommand = $command;
             $result = $this->executeJsonRpc($command);
             if ($result) {
@@ -488,7 +490,6 @@ class OntowikiCommandLineInterface {
         $this->argConfig = array(
             'execute' => array(
                 'short' => 'e',
-                'min' => 1,
                 'max' => -1,
                 'desc' => 'Execute one or more commands on a given wiki/graph'
             ),
@@ -526,6 +527,12 @@ class OntowikiCommandLineInterface {
                 'max' => 1,
                 'default' => $defaultConfig,
                 'desc' => 'Set a config file'
+            ),
+
+            'listModels' => array(
+                'short' => 'l',
+                'max' => 0,
+                'desc' => 'This is a shortcut for -e store:listModels'
             ),
 
             'debug' => array(
@@ -573,6 +580,16 @@ class OntowikiCommandLineInterface {
             $this->echoError ('Try "'.basename($_SERVER['SCRIPT_NAME']).' --help" for more information');
             exit();
 	}
+
+        // create command list, use shortcut, if available
+        if ($this->args->isDefined('listModels')) {
+            $this->commandList = array('store:listModels');
+        } elseif ( count($this->args->getValue('execute')) > 0 ) {
+            $this->commandList = (array) $this->args->getValue('execute');
+        } else {
+            $this->echoError('I don\'t know what to do. Please try -l or -e ... ');
+            die();
+        }
     }
 
     /**
