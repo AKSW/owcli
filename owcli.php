@@ -59,7 +59,7 @@ class OntowikiCommandLineInterface {
 
     public function __construct() {
         // load pear packages
-        $this->checkPackages();
+        $this->checkPearPackages();
         // check command line parameters
         $this->checkCommandLineArguments();
         // check and initialize config file
@@ -439,9 +439,9 @@ class OntowikiCommandLineInterface {
     }
 
     /*
-     * Load required Packages
+     * Load required PEAR Packages
      */
-    protected function checkPackages() {
+    protected function checkPearPackages() {
 	foreach ($this->pearPackages as $package) {
             if (!require_once($package) ) {
                 $this->echoError("PEAR package $package needed!");
@@ -451,11 +451,28 @@ class OntowikiCommandLineInterface {
     }
 
     /*
-     * Check for addionally tools
+     * Check for addionally tools and APIs
      */
     protected function checkTools() {
-        $rapper = `which rapper`;
-        #echo $rapper;
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $this->echoError('¡Ay, caramba! - owcli on Windows! This is not fully supported yet.');
+            #$this->echoError('The owcli needs rapper, the Raptor RDF parsing and serializing utility.');
+            #$this->echoError('Please install it from http://download.librdf.org/binaries/win32/');
+            #$this->echoError('The configure "rapper = path/to/rapper.exe" in your owcli.ini');
+        } else {
+            $rapperbin = `which rapper`;
+            if (!$rapperbin) {
+                $this->echoError('The owcli needs rapper, the Raptor RDF parsing and serializing utility.');
+                $this->echoError('On a debian based system, try "sudo apt-get install raptor-utils"');
+                die();
+            }
+        }
+
+        if (!function_exists('curl_version')) {
+            $this->echoError('The owcli needs php support for libcurl!');
+            $this->echoError('On a debian based system, try "sudo apt-get install php5-curl"');
+            die();
+        }
     }
 
     /*
