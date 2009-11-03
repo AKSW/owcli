@@ -1,0 +1,56 @@
+#-e --execute (optional)values  Execute one or more commands on a given
+#                               wiki/graph
+#-w --wiki=<value>              Set OntoWiki database which should be used
+#                               (default)
+#-m --model=<value>             Set model which should be used
+#                               (http://localhost/OntoWiki/Config/)
+#-i --input (optional)values    input model file (- for STDIN)
+#-o --output=<value>            output model file (- for STDOUT) (-)
+#-c --config=<value>            Set a config file (/home/seebi/.owcli)
+#-l --listModels                This is a shortcut for -e store:listModels
+#-d --debug                     Output some debug infos
+#-q --quiet                     Do not output info messages
+#-r --raw                       outputs the result in raw json instead of nice
+#                               tables etc.
+#-h --help                      Show this screen
+
+_owcliInputFile() {
+    local expl
+    _wanted files expl 'RDF File' _files -g '*.(#i)rdf(.)'
+}
+
+_owcliModel() {
+    compadd -- `owcli -l`
+    # todo: use $BUFFER and insert --wiki|-w into
+}
+
+_owcliCommand() {
+    #compadd -- `owcli -e meta:listProcedures:model`
+    #todo: use $BUFFER and insert --wiki|-w into
+
+    output=(`owcli -e meta:listProcedures:model`)
+    for name in `owcli -e meta:listProcedures:model`; do
+        echo $name
+    done
+    return
+    declare -a args
+    args=('add:add all input statements to the model' count:counts)
+    args=(`owcli -e meta:listProcedures:model`)
+    print $args
+    _describe 'command' args
+}
+
+_owcli() {
+#    declare -a args
+#    args=('eins:111' 'zwei:2222' 'drei:33333')
+#    _describe 'Argument' args
+    local context state line
+    typeset -A opt_args
+    _arguments -S \
+        '(--execute -e)'{--execute,-e}'[Execute one or more commands on a given wiki/graph]:command:_owcliCommand' \
+        '(-w --wiki)'{-w,--wiki}'[Set OntoWiki database which should be used]:wiki instance:(default demo)' \
+        '(-m --model)'{-m,--model}'[Set model which should be used]:model uri:_owcliModel' \
+        '(-i --input)'{-i,--input}'[input model file (- for STDIN)]:input model:_owcliInputFile' \
+    ;
+}
+compdef _owcli owcli
