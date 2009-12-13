@@ -445,8 +445,11 @@ class OntowikiCommandLineInterface {
      */
     protected function checkPearPackages() {
 	foreach ($this->pearPackages as $package) {
-            if (!require_once($package) ) {
+            if (!@include_once $package ) {
+                $packageName = str_replace('.php', '', $package);
+                $packageName = str_replace('/', '_', $packageName);
                 $this->echoError("PEAR package $package needed!");
+                $this->echoError("Mostly, you can install it with 'sudo pear install $packageName' ...");
                 die();
             }
         }
