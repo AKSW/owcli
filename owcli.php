@@ -513,7 +513,7 @@ class OntowikiCommandLineInterface {
             'input' => array(
                 'short' => 'i',
                 'max' => -1,
-                'desc' => 'input model file (- for STDIN)'
+                'desc' => 'Set input model file (- for STDIN)'
             ),
 
             'output' => array(
@@ -521,14 +521,14 @@ class OntowikiCommandLineInterface {
                 'min' => 1,
                 'max' => 1,
                 'default' => "-",
-                'desc' => 'output model file (- for STDOUT)'
+                'desc' => 'Set output model file (- for STDOUT)'
             ),
 
             'config' => array(
                 'short' => 'c',
                 'max' => 1,
                 'default' => $defaultConfig,
-                'desc' => 'Set a config file'
+                'desc' => 'Set config file'
             ),
 
             'listModels' => array(
@@ -558,7 +558,7 @@ class OntowikiCommandLineInterface {
             'raw' => array(
                 'short' => 'r',
                 'max' => 0,
-                'desc' => 'outputs the result in raw json instead of nice tables etc.'
+                'desc' => 'Outputs raw json results'
             ),
 
             'help' => array(
