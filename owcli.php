@@ -3,10 +3,9 @@
 /**
  * OntoWiki command line client
  *
- * @author     Sebastian Dietzold <dietzold@informatik.uni-leipzig.de>
- * @copyright  Copyright (c) 2009, {@link http://aksw.org AKSW}
+ * @author     Sebastian Tramp <tramp@informatik.uni-leipzig.de>
+ * @copyright  Copyright (c) 2009-2010 {@link http://aksw.org AKSW}
  * @license    http://www.gnu.org/licenses/gpl.txt  GNU GENERAL PUBLIC LICENSE v2
- * @version    SVN: $Id: owcli.php 4322 2009-10-19 10:18:57Z sebastian.dietzold $
  * @link       http://ontowiki.net/Projects/OntoWiki/CommandLineInterface
  */
 class OntowikiCommandLineInterface {
@@ -494,14 +493,14 @@ class OntowikiCommandLineInterface {
             'execute' => array(
                 'short' => 'e',
                 'max' => -1,
-                'desc' => 'Execute one or more commands on a given wiki/graph'
+                'desc' => 'Execute one or more commands'
             ),
 
             'wiki' => array(
                 'short' => 'w',
                 'max' => 1,
                 'default' => $defaultWiki,
-                'desc' => 'Set OntoWiki database which should be used'
+                'desc' => 'Set the wiki which should be used'
             ),
 
             'model' => array(
@@ -536,6 +535,12 @@ class OntowikiCommandLineInterface {
                 'short' => 'l',
                 'max' => 0,
                 'desc' => 'This is a shortcut for -e store:listModels'
+            ),
+
+            'listProcedures' => array(
+                'short' => 'p',
+                'max' => 0,
+                'desc' => 'This is a shortcut for -e meta:listAllProcedures'
             ),
 
             'debug' => array(
@@ -587,6 +592,10 @@ class OntowikiCommandLineInterface {
         // create command list, use shortcut, if available
         if ($this->args->isDefined('listModels')) {
             $this->commandList[] = 'store:listModels';
+        }
+        // create command list, use shortcut, if available
+        if ($this->args->isDefined('listProcedures')) {
+            $this->commandList[] = 'meta:listAllProcedures';
         }
         // append -e commands to the end to the command queue
         if ( count((array) $this->args->getValue('execute')) > 0 ) {
