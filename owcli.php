@@ -516,6 +516,7 @@ class OntowikiCommandLineInterface {
                 'desc' => 'Set input model file (- for STDIN)'
             ),
 
+/* not really needed
             'output' => array(
                 'short' => 'o',
                 'min' => 1,
@@ -523,7 +524,8 @@ class OntowikiCommandLineInterface {
                 'default' => "-",
                 'desc' => 'Set output model file (- for STDOUT)'
             ),
-
+*/
+            
             'config' => array(
                 'short' => 'c',
                 'max' => 1,
