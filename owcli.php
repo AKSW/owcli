@@ -123,15 +123,15 @@ class OntowikiCommandLineInterface {
             $files = array ( 0 => $this->args->getValue('input') );
         }
 
-        $tmpTripleLocation = tempnam ('/tmp', 'owcli-merged-input-');
+        $tmpTripleLocation = tempnam (sys_get_temp_dir(), 'owcli-merged-input-');
         $this->tmpTripleLocation = $tmpTripleLocation;
 
-	foreach ($files as $inputFile) {
+        foreach ($files as $inputFile) {
             $this->echoDebug("checkInputModels: input file is now $inputFile");
 
             // we need to temp-save stdin models first
             if ($inputFile == '-') {
-                $inputFile = tempnam ('/tmp', 'owcli-stdin-');
+                $inputFile = tempnam (sys_get_temp_dir(), 'owcli-stdin-');
                 $deleteFile = $inputFile;
                 $tmpStdInHandle = fopen ($inputFile, "w");
                 if ( !STDIN ) {
@@ -147,14 +147,23 @@ class OntowikiCommandLineInterface {
             }
 
             // all input files are merged to one big ntriple file
-            `rapper $inputFile -q -i guess -o ntriples >>$tmpTripleLocation`;
+            $inputOptions = $this->args->getValue('inputOptions');
+            $rapperParseCommand = "rapper $inputOptions $inputFile -q -o ntriples >>$tmpTripleLocation";
+            $this->echoDebug("checkInputModels: $rapperParseCommand");
+            system($rapperParseCommand, $rapperParseReturn);
 
             // delete the temp file for the STDIN input model
             if ($deleteFile) {
                 unlink($deleteFile);
                 unset ($deleteFile);
             }
-	}
+
+            if ($rapperParseReturn != 0) {
+                $this->echoError ('Error on parsing the input model!');
+                $this->echoError ("($rapperParseCommand)");
+                exit();
+            }
+        }
 
         $this->inputModel = json_decode(`rapper $tmpTripleLocation -q -i ntriples -o json`, true);
     }
@@ -374,7 +383,12 @@ class OntowikiCommandLineInterface {
 
         $postdata['id'] = $this->currentCommandId;
         $postdata = json_encode($postdata);
-        $this->echoDebug('postdata: ' . $postdata);
+
+        // this is too much information so only if debug AND raw is turned on
+        if ($this->args->isDefined('raw')) {
+            $this->echoDebug('postdata: ' . $postdata);
+        }
+
         curl_setopt ($rpc, CURLOPT_POST, true);
         curl_setopt ($rpc, CURLOPT_POSTFIELDS, $postdata);
 
@@ -514,6 +528,13 @@ class OntowikiCommandLineInterface {
                 'short' => 'i',
                 'max' => -1,
                 'desc' => 'Set input model file (- for STDIN)'
+            ),
+
+            'inputOptions' => array(
+                'min' => 1,
+                'max' => 1,
+                'default' => '-i rdfxml',
+                'desc' => 'rapper cmd input options'
             ),
 
 /* not really needed
