@@ -69,7 +69,7 @@ class OntowikiCommandLineInterface {
         $this->checkTools();
         // select the model to work with
         $this->selectModel();
-        // check and initialize addionally tools
+        // parse and check the input graph files
         $this->checkInputModels();
 
         $this->echoDebug('Everything ok, start to execute commands:');
@@ -117,7 +117,7 @@ class OntowikiCommandLineInterface {
             return;
         }
 
-	if (is_array($this->args->getValue('input'))) {
+        if (is_array($this->args->getValue('input'))) {
             $files = $this->args->getValue('input');
         } else {
             $files = array ( 0 => $this->args->getValue('input') );
@@ -165,6 +165,7 @@ class OntowikiCommandLineInterface {
             }
         }
 
+        $this->echoDebug("checkInputModels: All input models parsed and accepted");
         $this->inputModel = json_decode(`rapper $tmpTripleLocation -q -i ntriples -o json`, true);
     }
 
