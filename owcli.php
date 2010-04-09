@@ -3,16 +3,15 @@
 /**
  * OntoWiki command line client
  *
- * @author     Sebastian Dietzold <dietzold@informatik.uni-leipzig.de>
- * @copyright  Copyright (c) 2009, {@link http://aksw.org AKSW}
+ * @author     Sebastian Tramp <tramp@informatik.uni-leipzig.de>
+ * @copyright  Copyright (c) 2009-2010 {@link http://aksw.org AKSW}
  * @license    http://www.gnu.org/licenses/gpl.txt  GNU GENERAL PUBLIC LICENSE v2
- * @version    SVN: $Id: owcli.php 4322 2009-10-19 10:18:57Z sebastian.dietzold $
  * @link       http://ontowiki.net/Projects/OntoWiki/CommandLineInterface
  */
 class OntowikiCommandLineInterface {
     
     const NAME = 'The OntoWiki CLI';
-    const VERSION = '0.3 tip';
+    const VERSION = '0.4 tip';
 
     /* Required PEAR Packages */
     protected $pearPackages = array(
@@ -70,7 +69,7 @@ class OntowikiCommandLineInterface {
         $this->checkTools();
         // select the model to work with
         $this->selectModel();
-        // check and initialize addionally tools
+        // parse and check the input graph files
         $this->checkInputModels();
 
         $this->echoDebug('Everything ok, start to execute commands:');
@@ -118,21 +117,21 @@ class OntowikiCommandLineInterface {
             return;
         }
 
-	if (is_array($this->args->getValue('input'))) {
+        if (is_array($this->args->getValue('input'))) {
             $files = $this->args->getValue('input');
         } else {
             $files = array ( 0 => $this->args->getValue('input') );
         }
 
-        $tmpTripleLocation = tempnam ('/tmp', 'owcli-merged-input-');
+        $tmpTripleLocation = tempnam (sys_get_temp_dir(), 'owcli-merged-input-');
         $this->tmpTripleLocation = $tmpTripleLocation;
 
-	foreach ($files as $inputFile) {
+        foreach ($files as $inputFile) {
             $this->echoDebug("checkInputModels: input file is now $inputFile");
 
             // we need to temp-save stdin models first
             if ($inputFile == '-') {
-                $inputFile = tempnam ('/tmp', 'owcli-stdin-');
+                $inputFile = tempnam (sys_get_temp_dir(), 'owcli-stdin-');
                 $deleteFile = $inputFile;
                 $tmpStdInHandle = fopen ($inputFile, "w");
                 if ( !STDIN ) {
@@ -148,15 +147,25 @@ class OntowikiCommandLineInterface {
             }
 
             // all input files are merged to one big ntriple file
-            `rapper $inputFile -q -i guess -o ntriples >>$tmpTripleLocation`;
+            $inputOptions = $this->args->getValue('inputOptions');
+            $rapperParseCommand = "rapper $inputOptions $inputFile -q -o ntriples >>$tmpTripleLocation";
+            $this->echoDebug("checkInputModels: $rapperParseCommand");
+            system($rapperParseCommand, $rapperParseReturn);
 
             // delete the temp file for the STDIN input model
             if ($deleteFile) {
                 unlink($deleteFile);
                 unset ($deleteFile);
             }
-	}
 
+            if ($rapperParseReturn != 0) {
+                $this->echoError ('Error on parsing the input model!');
+                $this->echoError ("($rapperParseCommand)");
+                exit();
+            }
+        }
+
+        $this->echoDebug("checkInputModels: All input models parsed and accepted");
         $this->inputModel = json_decode(`rapper $tmpTripleLocation -q -i ntriples -o json`, true);
     }
 
@@ -375,7 +384,12 @@ class OntowikiCommandLineInterface {
 
         $postdata['id'] = $this->currentCommandId;
         $postdata = json_encode($postdata);
-        $this->echoDebug('postdata: ' . $postdata);
+
+        // this is too much information so only if debug AND raw is turned on
+        if ($this->args->isDefined('raw')) {
+            $this->echoDebug('postdata: ' . $postdata);
+        }
+
         curl_setopt ($rpc, CURLOPT_POST, true);
         curl_setopt ($rpc, CURLOPT_POSTFIELDS, $postdata);
 
@@ -494,14 +508,14 @@ class OntowikiCommandLineInterface {
             'execute' => array(
                 'short' => 'e',
                 'max' => -1,
-                'desc' => 'Execute one or more commands on a given wiki/graph'
+                'desc' => 'Execute one or more commands'
             ),
 
             'wiki' => array(
                 'short' => 'w',
                 'max' => 1,
                 'default' => $defaultWiki,
-                'desc' => 'Set OntoWiki database which should be used'
+                'desc' => 'Set the wiki which should be used'
             ),
 
             'model' => array(
@@ -514,28 +528,43 @@ class OntowikiCommandLineInterface {
             'input' => array(
                 'short' => 'i',
                 'max' => -1,
-                'desc' => 'input model file (- for STDIN)'
+                'desc' => 'Set input model file (- for STDIN)'
             ),
 
+            'inputOptions' => array(
+                'min' => 1,
+                'max' => 1,
+                'default' => '-i rdfxml',
+                'desc' => 'rapper cmd input options'
+            ),
+
+/* not really needed
             'output' => array(
                 'short' => 'o',
                 'min' => 1,
                 'max' => 1,
                 'default' => "-",
-                'desc' => 'output model file (- for STDOUT)'
+                'desc' => 'Set output model file (- for STDOUT)'
             ),
-
+*/
+            
             'config' => array(
                 'short' => 'c',
                 'max' => 1,
                 'default' => $defaultConfig,
-                'desc' => 'Set a config file'
+                'desc' => 'Set config file'
             ),
 
             'listModels' => array(
                 'short' => 'l',
                 'max' => 0,
                 'desc' => 'This is a shortcut for -e store:listModels'
+            ),
+
+            'listProcedures' => array(
+                'short' => 'p',
+                'max' => 0,
+                'desc' => 'This is a shortcut for -e meta:listAllProcedures'
             ),
 
             'debug' => array(
@@ -553,7 +582,7 @@ class OntowikiCommandLineInterface {
             'raw' => array(
                 'short' => 'r',
                 'max' => 0,
-                'desc' => 'outputs the result in raw json instead of nice tables etc.'
+                'desc' => 'Outputs raw json results'
             ),
 
             'help' => array(
@@ -587,6 +616,10 @@ class OntowikiCommandLineInterface {
         // create command list, use shortcut, if available
         if ($this->args->isDefined('listModels')) {
             $this->commandList[] = 'store:listModels';
+        }
+        // create command list, use shortcut, if available
+        if ($this->args->isDefined('listProcedures')) {
+            $this->commandList[] = 'meta:listAllProcedures';
         }
         // append -e commands to the end to the command queue
         if ( count((array) $this->args->getValue('execute')) > 0 ) {

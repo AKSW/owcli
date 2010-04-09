@@ -5,6 +5,6 @@ password = "pass"
 defaultmodel = "http://example.org/"
 
 [demo]
-baseuri = "http://demo.ontowiki.net"
+baseuri = "http://trunk.ontowiki.net"
 ;user = ""
 ;password = ""
