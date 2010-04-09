@@ -11,7 +11,7 @@
 class OntowikiCommandLineInterface {
     
     const NAME = 'The OntoWiki CLI';
-    const VERSION = '0.3 tip';
+    const VERSION = '0.3';
 
     /* Required PEAR Packages */
     protected $pearPackages = array(
