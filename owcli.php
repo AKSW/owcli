@@ -101,7 +101,7 @@ class OntowikiCommandLineInterface {
         }
 
         // if model parameter is explicit given, of course use it ...
-        if (array_search('-m' , $argv)) {
+        if ( (array_search('-m' , $argv) || array_search('--model' , $argv) ) ) {
             $model = $this->args->getValue('model');
         }
 
