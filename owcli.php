@@ -6,7 +6,7 @@
  * @author     Sebastian Tramp <tramp@informatik.uni-leipzig.de>
  * @copyright  Copyright (c) 2009-2010 {@link http://aksw.org AKSW}
  * @license    http://www.gnu.org/licenses/gpl.txt  GNU GENERAL PUBLIC LICENSE v2
- * @link       http://ontowiki.net/Projects/OntoWiki/CommandLineInterface
+ * @link       http://code.google.com/p/ontowiki/wiki/CommandLineInterface
  */
 class OntowikiCommandLineInterface {
     
@@ -199,9 +199,13 @@ class OntowikiCommandLineInterface {
                             // e.g. on sparql queries without without result
                             echo 'Empty result' . PHP_EOL;
                         } elseif (!is_array($result[0])) {
-                            // simply output for one-dimensional arrays
+                            // simply output for one-dimensional arrays (e.g. -l)
                             foreach ($result as $row) {
-                                echo $row . PHP_EOL;
+                                if ($this->args->isDefined('zsh')) {
+                                    echo '"'.str_replace(':', '\:',$row).'"' . PHP_EOL;
+                                } else {
+                                    echo $row . PHP_EOL;
+                                };
                             }
                         } else {
                             // table output for multidimensional arrays
@@ -583,6 +587,12 @@ class OntowikiCommandLineInterface {
                 'short' => 'r',
                 'max' => 0,
                 'desc' => 'Outputs raw json results'
+            ),
+
+            'zsh' => array(
+                'short' => 'z',
+                'max' => 0,
+                'desc' => 'Outputs in zsh completion friendly format'
             ),
 
             'help' => array(
