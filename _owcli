@@ -18,31 +18,36 @@ _owcliInputFile () {
 }
 
 _owcliModel () {
-    compadd -- `owcli -l`
-    # todo: use $BUFFER and insert --wiki|-w into
+    local -a models
+    if [ -z "$words[$CURRENT]" ]
+    then
+        models="(`$words ttt -l -z models 2>/dev/null`)"
+    else
+        models="(`$words -l -z models 2>/dev/null`)"
+    fi
+    _describe -t model "Knowledge Base" $models
 }
 
 _owclWiki () {
-    local wikis
-    wikis=(default demo)
-    _describe -t wiki "Wiki Instances" wikis
+    local -a wikis
+    if [ -z "$words[$CURRENT]" ]
+    then
+        wikis="(`$words ttt -z wikis 2>/dev/null`)"
+    else
+        wikis="(`$words -z wikis 2>/dev/null`)"
+    fi
+    _describe -t wiki "Wiki Instance" $wikis
 }
 
 _owcliCommand () {
-    declare -a procedures
-    procedures=("store\:listServer:lists all jsonrpc server from the wiki instance" "meta" "model")
-    #_combination -s '[:@]' server user "$@"
-    #compadd -- `owcli -e meta:listProcedures:model`
-    #todo: use $BUFFER and insert --wiki|-w into
-
-    #output=(`owcli -e meta:listProcedures:model`)
-    #for name in `owcli -e meta:listProcedures:model`; do
-    #    echo $name
-    #done
-    #return
-    #args=(`owcli -e meta:listProcedures:model`)
-    #print $args
-    _describe -t command 'command' procedures
+    local -a rprocs
+    if [ -z "$words[$CURRENT]" ]
+    then
+        rprocs="(`$words ttt -p -z procedures 2>/dev/null`)"
+    else
+        rprocs="(`$words -p -z procedures 2>/dev/null`)"
+    fi
+    _describe -t rproc "Remote Procedure" $rprocs
 }
 
 _owcli () {

@@ -201,6 +201,7 @@ class OntowikiCommandLineInterface {
                         } elseif (!is_array($result[0])) {
                             // simply output for one-dimensional arrays (e.g. -l)
                             foreach ($result as $row) {
+                                // here we switch to zsh friendly output for the model list
                                 if ($this->args->isDefined('zsh')) {
                                     echo '"'.str_replace(':', '\:',$row).'"' . PHP_EOL;
                                 } else {
@@ -208,8 +209,14 @@ class OntowikiCommandLineInterface {
                                 };
                             }
                         } else {
-                            // table output for multidimensional arrays
-                            echo $this->renderTable($result);
+                            // here we switch to zsh friendly output for the procedure list
+                            if ($this->args->isDefined('zsh')) {
+                                // zsh friendly table output for multidimensional arrays
+                                echo $this->renderRPCTable($result);
+                            } else {
+                                // table output for multidimensional arrays
+                                echo $this->renderTable($result);
+                            };
                         }
                     } elseif ( is_bool($result) ) {
                         // all simple result type are printed with echo
@@ -265,6 +272,28 @@ class OntowikiCommandLineInterface {
         // output the table
         return $table->getTable();
    }
+
+
+    /*
+     * Renders a RPC (-p) table result zsh friendly
+     *
+     * @param string $result  the result from an executeJsonRpc call
+     */
+    protected function renderRPCTable ($result) {
+        #var_dump($result); die();
+        $output = "";
+        foreach ($result as $row) {
+            #var_dump($row);
+            $rpcName = str_replace(':', '\:', $row['name']);
+            $rpcDescription = str_replace(':', '\:', $row['description']) ;
+            $rpcDescription = str_replace(' ', '\ ', $rpcDescription) ;
+
+            $output .= '"' . $rpcName . '"' . PHP_EOL;
+            #$output .= '"' . $rpcName . ':' . $rpcDescription . '"' . PHP_EOL;
+        }
+        echo $output;
+   }
+
 
     /*
      * Retrieve a Service Mapping Description from the Server
@@ -591,8 +620,8 @@ class OntowikiCommandLineInterface {
 
             'zsh' => array(
                 'short' => 'z',
-                'max' => 0,
-                'desc' => 'Outputs in zsh completion friendly format'
+                'max' => 1,
+                'desc' => 'zsh friendly output (do not use manually)'
             ),
 
             'help' => array(
@@ -637,9 +666,13 @@ class OntowikiCommandLineInterface {
                 $this->commandList[] = $command;
             }
         }
+
+        # if we do not have any command, die (but not in zshcompletion mode)
         if ( count($this->commandList) == 0 ) {
-            $this->echoError('I don\'t know what to do. Please try -l or -e ... ');
-            die();
+            if (!$this->args->isDefined('zsh')) {
+                $this->echoError('I don\'t know what to do. Please try -l or -e ... ');
+                die();
+            }
         }
     }
 
@@ -648,28 +681,39 @@ class OntowikiCommandLineInterface {
      */
     protected function checkConfig() {
         $file = $this->args->getValue('config');
-	$config = @parse_ini_file($file, TRUE);
+        $config = @parse_ini_file($file, TRUE);
 
-	if (!isset($config)) {
-            $this->echoError ('Can\'t open config file $file');
-            die();
-	}
+        # returns the wiki autocompletion
+        if ($this->args->isDefined('zsh')) {
+            $zshvalue = $this->args->getValue('zsh');
+            if ($zshvalue == "wikis") {
+                foreach ($config as $key => $value) {
+                    echo '"'.str_replace(':', '\:',$key).'"' . PHP_EOL;
+                }
+                exit;
+            }
+        }
 
-	$wiki = $this->args->getValue('wiki');
-	if (!isset($config[$wiki])) {
-            $this->echoError ('Wiki instance '.$wiki.' not configured in configfile '.$file);
-            die();
-	} elseif ( !isset($config[$wiki]['baseuri']) ) {
-            $this->echoError ('Wiki instance '.$wiki.' has no baseuri in configfile '.$file);
-            die();
+        if (!isset($config)) {
+                $this->echoError ('Can\'t open config file $file');
+                die();
+        }
+
+        $wiki = $this->args->getValue('wiki');
+        if (!isset($config[$wiki])) {
+                $this->echoError ('Wiki instance '.$wiki.' not configured in configfile '.$file);
+                die();
+        } elseif ( !isset($config[$wiki]['baseuri']) ) {
+                $this->echoError ('Wiki instance '.$wiki.' has no baseuri in configfile '.$file);
+                die();
         }
 
         $this->wikiConfig = $config[$wiki];
 
-	$this->config = $config;
+        $this->config = $config;
 
         #$this->wiki = $this->config[]
-	$this->echoDebug ('Config file loaded and ok');
+        $this->echoDebug ('Config file loaded and ok');
 
     }
 
