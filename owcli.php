@@ -76,7 +76,7 @@ class OntowikiCommandLineInterface {
         foreach ((array) $this->commandList as $command) {
             $this->currentCommand = $command;
             $result = $this->executeJsonRpc($command);
-            if ($result) {
+            if (isset($result)) {
                 $this->renderResult ($result);
             }
         }
@@ -153,7 +153,7 @@ class OntowikiCommandLineInterface {
             system($rapperParseCommand, $rapperParseReturn);
 
             // delete the temp file for the STDIN input model
-            if ($deleteFile) {
+            if (isset($deleteFile)) {
                 unlink($deleteFile);
                 unset ($deleteFile);
             }
@@ -186,7 +186,7 @@ class OntowikiCommandLineInterface {
                 $this->echoError('Something went wrong, response was not json encoded (turn debug on to see more)');
                 $this->echoDebug($response);
             } else {
-                if ($decodedResult['error']) {
+                if (isset($decodedResult['error'])) {
                     // if we have an rpc error, output is easy too
                     $error = $decodedResult['error'];
                     $this->echoError('JSONRPC Error '.$error['code'].': '.$error['message']);
@@ -308,7 +308,7 @@ class OntowikiCommandLineInterface {
         curl_setopt ($smb, CURLOPT_CONNECTTIMEOUT, 30);
         $content = curl_exec($smb);
         $recodedContent = json_decode($content);
-        if ($recodedContent) {
+        if (isset($recodedContent)) {
             $info = curl_getinfo($smb);
             if ($info['http_code'] != 200) {
                 $this->echoError('Error on getSMD: '. $info['http_code'].' '. $this->http_codes[$info['http_code']]);
@@ -333,9 +333,9 @@ class OntowikiCommandLineInterface {
             $this->echoError('The command "'.$command.'" is not a valid owcli command.');
             return false;
         } else {
-            $serverAction = $matches[1];
-            $rpcMethod = $matches[2];
-            $rpcParameter = $matches[4];
+            $serverAction = isset($matches[1]) ? $matches[1] : '';
+            $rpcMethod = isset($matches[2]) ? $matches[2] : '';
+            $rpcParameter = isset($matches[4]) ? $matches[4] : '';
         }
         $this->echoDebug("starting jsonrpc: $serverAction:$rpcMethod");
         $this->currentCommandId++;
@@ -351,11 +351,11 @@ class OntowikiCommandLineInterface {
         curl_setopt ($rpc, CURLOPT_URL, $serverUrl);
 
         // retrieve Service Mapping Description (SMD) (if not already done)
-        if (!$this->smd[$serverAction]) {
+        if (!isset($this->smd[$serverAction])) {
             $this->smd[$serverAction] = $this->getSMD($serverUrl);
         }
         $serversmd = $this->smd[$serverAction];
-        if ($serversmd->services->$rpcMethod) {
+        if (isset($serversmd->services->$rpcMethod)) {
             $methodsmb = $serversmd->services->$rpcMethod;
         } else {
             $this->echoError('The command "'.$rpcMethod.'" has no valid Service Mapping Description from the server.');
@@ -381,7 +381,7 @@ class OntowikiCommandLineInterface {
                     break;
 
                 case 'inputModel':
-                    if ($this->inputModel) {
+                    if (isset($this->inputModel)) {
                         $value = $this->inputModel;
                     } else {
                         $this->echoError("The command '$command' needs a model input.");
@@ -393,7 +393,7 @@ class OntowikiCommandLineInterface {
                     break;
             }
             
-            if ($value) {
+            if (isset($value)) {
                 $postdata['params'][$key] = $value;
                 $this->echoDebug("Use internal value for parameter '$key'");
             } elseif (count($rpcParameterArray) > 0) {
@@ -405,7 +405,7 @@ class OntowikiCommandLineInterface {
                 // set value as parameter
                 $postdata['params'][$key] = $value;
                 $this->echoDebug("Use given value '$value' for parameter '$key'");
-            } elseif ($parameter->default) {
+            } elseif (isset($parameter->default)) {
                 $value = $parameter->default;
                 $postdata['params'][$key] = $value;
                 $this->echoDebug("Use default value '$value' for parameter '$key'");
