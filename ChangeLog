@@ -1,10 +1,14 @@
+0.4
+- extended zsh completion (multiple wikis, models, etc.)
+- php 5.3 strict safe
+
 0.3
 - complete remake as a jsonrpc client (all actions are jsonrpc calls)
 - no update-subscription and geocoding feature anymore
 
 0.2
 - new query command to query models with sparql (RAP 0.9.5 or trunk needed)
-- new geocode commad to geocode (address) values from a given datatype property
+- new geocode command to geocode (address) values from a given datatype property
 - new count command to display number of statements
 - some fixes towards macos compatibility
 - basic bash_autocompletion file added

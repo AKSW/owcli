@@ -9,9 +9,9 @@
  * @link       http://code.google.com/p/ontowiki/wiki/CommandLineInterface
  */
 class OntowikiCommandLineInterface {
-    
+
     const NAME = 'The OntoWiki CLI';
-    const VERSION = '0.4 tip';
+    const VERSION = '0.4';
 
     /* Required PEAR Packages */
     protected $pearPackages = array(
@@ -433,7 +433,7 @@ class OntowikiCommandLineInterface {
                     base64_encode($this->wikiConfig['user'].':'.$this->wikiConfig['password'])
             );
             curl_setopt ($rpc, CURLOPT_HTTPHEADER, $headers);
-            curl_setopt ($rpc, CURLOPT_HTTPAUTH, CURLAUTH_ANY);            
+            curl_setopt ($rpc, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
         }
 
         // catch URL and work on response
@@ -452,7 +452,7 @@ class OntowikiCommandLineInterface {
                 $this->echoError('Error on executeJsonRpc: '. $info['http_code'].' '. $this->http_codes[$info['http_code']]);
                 die();
             }
-            
+
 
             $decodedResponse = json_decode($response, true);
 
@@ -580,7 +580,7 @@ class OntowikiCommandLineInterface {
                 'desc' => 'Set output model file (- for STDOUT)'
             ),
 */
-            
+
             'config' => array(
                 'short' => 'c',
                 'max' => 1,
