@@ -1,16 +1,4 @@
-#-e --execute (optional)values  Execute one or more commands
-#-w --wiki=<value>              Set the wiki which should be used (default)
-#-m --model=<value>             Set model which should be used
-#                               (http://localhost/OntoWiki/Config/)
-#-i --input (optional)values    Set input model file (- for STDIN)
-#   --inputOptions=<value>      rapper cmd input options (-i rdfxml)
-#-c --config=<value>            Set config file (/home/seebi/.owcli)
-#-l --listModels                This is a shortcut for -e store:listModels
-#-p --listProcedures            This is a shortcut for -e meta:listAllProcedures
-#-d --debug                     Output some debug infos
-#-q --quiet                     Do not output info messages
-#-r --raw                       Outputs raw json results
-#-h --help                      Show this screen
+#compdef owcli
 
 _owcliInputFile () {
     local expl
@@ -68,4 +56,4 @@ _owcli () {
     ;
 }
 
-compdef _owcli owcli
+compdef _owcli owcli owcli.php
