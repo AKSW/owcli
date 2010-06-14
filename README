@@ -1,12 +1,10 @@
 == About owcli ==
 
-The OntoWiki Command Line Interface (owcli) is a php-based command line tool
-to administrate and manipulate OntoWiki Knowledge Bases.
+The OntoWiki Command Line Client is a script-able and pipe-able PHP application
+for the Unix command line to help you to manage your OntoWiki knowledge bases.
 
-Homepage:     http://ontowiki.net/Projects/OntoWiki/CommandLineInterface
-Tar/BZ2:      http://sourceforge.net/project/showfiles.php?group_id=99425
-Changelog:    http://powl.svn.sourceforge.net/viewvc/*checkout*/powl/trunk/owcli/ChangeLog
-Source tree:  http://powl.svn.sourceforge.net/viewvc/powl/trunk/owcli/
-Bug tracker:  http://sourceforge.net/tracker/?group_id=99425&atid=624170
-Mailing list: http://sourceforge.net/mail/?group_id=99425
-
+Homepage:     http://code.google.com/p/ontowiki/wiki/CommandLineInterface
+Tar/BZ2:      http://code.google.com/p/ontowiki/downloads/list?q=label:owcli
+Changelog:    http://code.google.com/p/ontowiki/source/browse/ChangeLog?repo=owcli
+Sources:      http://code.google.com/p/ontowiki/source/checkout?repo=owcli
+Bug tracker:  http://code.google.com/p/ontowiki/issues/list?can=2&q=component%3Dowcli
