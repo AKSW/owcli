@@ -396,7 +396,7 @@ class OntowikiCommandLineInterface {
             if (isset($value)) {
                 $postdata['params'][$key] = $value;
                 $this->echoDebug("Use internal value for parameter '$key'");
-            } elseif (count($rpcParameterArray) > 0) {
+            } elseif ( ( isset($rpcParameterArray) ) && (count($rpcParameterArray) > 0) ) {
                 // take the first array element
                 $value = reset($rpcParameterArray);
                 // unset this element from the parameter array
