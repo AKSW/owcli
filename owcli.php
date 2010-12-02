@@ -427,7 +427,7 @@ class OntowikiCommandLineInterface {
         curl_setopt ($rpc, CURLOPT_POSTFIELDS, $postdata);
 
         // add authentification header if there are auth credentials configured
-        if ( $this->wikiConfig['user'] && $this->wikiConfig['password'] ) {
+        if ( isset($this->wikiConfig['user']) && isset($this->wikiConfig['password']) ) {
             $headers = array(
                 "Authorization: Basic " .
                     base64_encode($this->wikiConfig['user'].':'.$this->wikiConfig['password'])
