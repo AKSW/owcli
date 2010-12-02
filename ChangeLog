@@ -1,3 +1,6 @@
+0.5
+- model history
+
 0.4
 - extended zsh completion (multiple wikis, models, etc.)
 - php 5.3 strict safe

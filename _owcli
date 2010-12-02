@@ -5,7 +5,7 @@ _owcliInputFile () {
     _wanted files expl 'RDF File' _files -g '*.(#i)(rdf|n3|nt|owl|tt)(.)'
 }
 
-_owcliModel () {
+_owcliModelsLive () {
     local -a models
     if [ -z "$words[$CURRENT]" ]
     then
@@ -14,6 +14,25 @@ _owcliModel () {
         models="(`$words -l -z models 2>/dev/null`)"
     fi
     _describe -t model "Knowledge Base" $models
+}
+
+_owcliModelHistory () {
+    typeset -a mhistory
+    local model
+    touch ~/.model_history
+    rm -rf ~/.model_history.uniq
+    uniq ~/.model_history >~/.model_history.uniq
+    rm ~/.model_history
+    mv ~/.model_history.uniq ~/.model_history
+    cat ~/.model_history 2> /dev/null | sed 's/:/\\\\:/' | while read model
+    do
+        mhistory+=(${model/ #    [0-9]#:*})
+    done
+    _describe -t mhistory 'Knowledge Base (history)' mhistory
+}
+
+_owcliModel () {
+    _alternative 'model:Knowledge Base:_owcliModelsLive' 'mhistory:Knowledge Base (history):_owcliModelHistory'
 }
 
 _owclWiki () {

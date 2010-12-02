@@ -11,7 +11,7 @@
 class OntowikiCommandLineInterface {
 
     const NAME = 'The OntoWiki CLI';
-    const VERSION = '0.4';
+    const VERSION = '0.5';
 
     /* Required PEAR Packages */
     protected $pearPackages = array(
@@ -88,6 +88,21 @@ class OntowikiCommandLineInterface {
     }
 
     /*
+     * write a model line to the model history
+     */
+    protected function writeModelHistory($model) {
+        if ($model == 'ttt') return; # ttt is used for special purposes
+        global $argv;
+        $filename = getenv('HOME').'/.model_history';
+        $history = fopen($filename,'a');
+        if ($history != false) {
+            fwrite($history, $model . PHP_EOL);
+            fclose($history);
+            $this->echoDebug("history $filename added model: $model");
+        }
+    }
+
+    /*
      * selects a model from different config options
      */
     protected function selectModel() {
@@ -107,6 +122,7 @@ class OntowikiCommandLineInterface {
 
         $this->echoDebug('selected model: '.$model);
         $this->selectedModel = $model;
+        $this->writeModelHistory($model);
     }
 
     /*
