@@ -30,6 +30,12 @@ Drop a model (delete all statements):
 Create a new Model and add tripels from a file:
 .B owcli -m http://localhost/model1/ \-e model:create model:add -i file.rdf
 
+.TP
+Register a new namespace prefix for a model (to use it in a sparql query later):
+.B owcli -m http://localhost/model1/ \-e model:addPrefix:ex,http://example.com/
+
+Note that additional paramaters after the first are separated with a ','.
+
 .SH AUTHOR
 Sebastian Tramp (mail@sebastian.tramp.name)
 .SH SEE ALSO
