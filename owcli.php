@@ -214,7 +214,7 @@ class OntowikiCommandLineInterface {
                         if (count($result) == 0) {
                             // e.g. on sparql queries without without result
                             echo 'Empty result' . PHP_EOL;
-                        } elseif (!is_array($result[0])) {
+                        } elseif ( (isset($result[0])) && (!is_array($result[0])) ) {
                             // simply output for one-dimensional arrays (e.g. -l)
                             foreach ($result as $row) {
                                 // here we switch to zsh friendly output for the model list
@@ -227,10 +227,10 @@ class OntowikiCommandLineInterface {
                         } else {
                             // here we switch to zsh friendly output for the procedure list
                             if ($this->args->isDefined('zsh')) {
-                                // zsh friendly table output for multidimensional arrays
+                                // zsh friendly table output for twodimensional arrays
                                 echo $this->renderRPCTable($result);
                             } else {
-                                // table output for multidimensional arrays
+                                // table output for twodimensional arrays
                                 echo $this->renderTable($result);
                             };
                         }
@@ -256,6 +256,7 @@ class OntowikiCommandLineInterface {
 
     /*
      * Renders a table rpc result (e.g. for sparql results)
+     * TODO: make ready for associative arrays
      *
      * @param string $result  the result from an executeJsonRpc call
      */
@@ -382,7 +383,7 @@ class OntowikiCommandLineInterface {
 
         // split parameters by explode to use it in procedure parameters
         if ($rpcParameter) {
-            $rpcParameterArray = explode(':', $rpcParameter);
+            $rpcParameterArray = explode(',', $rpcParameter);
             #var_dump($rpcParameterArray);
         }
 
