@@ -1,5 +1,5 @@
 INSTALLDIR="/usr/local"
-VERSION="0.4"
+VERSION="0.5"
 
 default:
 	@echo "This is a PHP project no need to compile something."
