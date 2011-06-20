@@ -1,0 +1,17 @@
+owcli (0.5-3) lod2; urgency=low
+
+  * pear install now forced with -f
+
+ -- Sebastian Tramp <tramp@informatik.uni-leipzig.de>  Mon, 20 Jun 2011 10:20:28 +0200
+
+owcli (0.5-2) lod2; urgency=low
+
+  * now with correct dependencies and postinst
+
+ -- Sebastian Tramp <tramp@informatik.uni-leipzig.de>  Mon, 20 Jun 2011 10:12:11 +0200
+
+owcli (0.5-1) lod2; urgency=low
+
+  * initial debian package
+
+ -- Sebastian Tramp <tramp@informatik.uni-leipzig.de>  Sat, 18 Jun 2011 20:35:10 +0200

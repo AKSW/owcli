@@ -1,0 +1,30 @@
+Source: owcli
+Section: web
+Priority: extra
+Maintainer: Sebastian Tramp <tramp@informatik.uni-leipzig.de>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.9.1
+Homepage: http://ontowiki.net
+Vcs-Git: git://github.com/AKSW/owcli.git
+Vcs-Browser: https://github.com/AKSW/owcli
+
+Package: owcli
+Architecture: all
+Depends: php5-cli, php-pear, php5-curl, raptor-utils,  ${misc:Depends}
+Description: OntoWiki Command Line Interface
+ The OntoWiki Command Line Interface is a script-able and pipe-able
+ PHP application for the Unix command line to help you to manage
+ your OntoWiki knowledge bases.
+ .
+ The OntoWiki Command Line Interface is a specialised JSON/RPC client
+ for the OntoWiki JSON/RPC component. You need a working OntoWiki
+ with this component activated and it depend on your OntoWiki version,
+ which remote procedures you can use.
+ .
+ I recommend to use the zsh together with OntoWiki because of the
+ existing zsh auto-completion function which make the work with owcli
+ much easier.
+ .
+ A detailed documentation together with many examples can be accessed
+ at http://code.google.com/p/ontowiki/wiki/CommandLineInterface.
+

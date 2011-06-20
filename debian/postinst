@@ -1,0 +1,14 @@
+#!/bin/sh -e
+# postinst script for owcli
+#
+# see: dh_installdeb(1)
+
+echo "---- starting postinst $@"
+
+pear install -f Console_Getargs
+pear install -f Console_Table
+
+
+#DEBHELPER#
+
+echo "---- ending postinst $@"
