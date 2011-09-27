@@ -12,7 +12,7 @@ Install required pear packages, on debian/ubuntu:
 
     sudo pear install Console_Getargs Config Console_Table
 
-Download the [http://code.google.com/p/ontowiki/downloads/list?q=label:owcli](owcli download package).
+Download the [owcli download package](https://github.com/AKSW/owcli/tarball/master).
 
 Unpack it and run 
 
@@ -72,7 +72,7 @@ To switch between the configured wiki installations, use the `-w ` parameter.
 
 ## Usage
 
-owcli is an RPC client which follows the [http://json-rpc.org/wiki/specification](JSON RPC protocol specification).
+owcli is an RPC client which follows the [JSON RPC protocol specification](http://json-rpc.org/wiki/specification).
 This means, owcli runs a remote procedure on your OntoWiki instance which is an JSON/RPC server.
 
 If you have enabled the `jsonrpc` component extension on your Ontowiki instance (which is enabled by default) you can access different jsonrpc servers on it.
@@ -176,7 +176,7 @@ Export the example model to a file:
 
     > owcli -e model:export >myNewModel.rdf
 
-Export the example model, put it to [http://www.w3.org/2000/10/swap/doc/cwm](cwm) and add the inferred statements from the rule file:
+Export the example model, put it to [cwm](http://www.w3.org/2000/10/swap/doc/cwm) and add the inferred statements from the rule file:
 
     > owcli -e model:export | cwm --rdf --n3 --filter=Rules.n3 --rdf | owcli -e model:add -i -
 

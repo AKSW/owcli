@@ -21,7 +21,7 @@ uninstall:
 
 dist:
 	mkdir -p owcli-$(VERSION)
-	cp -R ChangeLog dot.owcli INSTALL Makefile owcli.1 owcli.php README owcli-$(VERSION)
+	cp -R ChangeLog dot.owcli Makefile owcli.1 owcli.php README.md owcli-$(VERSION)
 	tar cjf owcli-$(VERSION).tar.bz2 owcli-$(VERSION)
 	rm -rf owcli-$(VERSION)
 
