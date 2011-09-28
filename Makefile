@@ -12,7 +12,7 @@ install:
 	cp dot.owcli $(INSTALLDIR)/share/owcli/
 	mkdir -p $(INSTALLDIR)/man/man1/
 	cp owcli.1 $(INSTALLDIR)/man/man1/owcli
-	ln -s $(INSTALLDIR)/share/owcli/owcli.php $(INSTALLDIR)/bin/owcli
+	ln -sf $(INSTALLDIR)/share/owcli/owcli.php $(INSTALLDIR)/bin/owcli
 
 uninstall:
 	rm -rf $(INSTALLDIR)/bin/owcli
