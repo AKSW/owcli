@@ -416,7 +416,7 @@ class OntowikiCommandLineInterface {
                 default:
                     break;
             }
-            
+
             if (isset($value)) {
                 $postdata['params'][$key] = $value;
                 $this->echoDebug("Use internal value for parameter '$key'");
