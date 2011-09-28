@@ -506,7 +506,7 @@ class OntowikiCommandLineInterface {
      * Write STDERR-String if Debug-Mode on
      */
     protected function echoDebug ($string) {
-	if ($this->args->isDefined('debug')) {
+    if ($this->args->isDefined('debug')) {
             fwrite(STDERR, $string . "\n");
         }
     }
@@ -515,7 +515,7 @@ class OntowikiCommandLineInterface {
      * Load required PEAR Packages
      */
     protected function checkPearPackages() {
-	foreach ($this->pearPackages as $package) {
+        foreach ($this->pearPackages as $package) {
             if (!@include_once $package ) {
                 $packageName = str_replace('.php', '', $package);
                 $packageName = str_replace('/', '_', $packageName);
@@ -655,13 +655,13 @@ class OntowikiCommandLineInterface {
             ),
         );
 
-	$header = self::NAME . ' ' . self::VERSION . PHP_EOL .
-		'Usage: '.basename($_SERVER['SCRIPT_NAME']).' [options]' . PHP_EOL . PHP_EOL;
-	$footer = PHP_EOL . 'Note: Some commands are limited to the php.ini value memory_limit ...';
+    $header = self::NAME . ' ' . self::VERSION . PHP_EOL .
+        'Usage: '.basename($_SERVER['SCRIPT_NAME']).' [options]' . PHP_EOL . PHP_EOL;
+    $footer = PHP_EOL . 'Note: Some commands are limited to the php.ini value memory_limit ...';
 
-	$this->args =& Console_Getargs::factory($this->argConfig);
+    $this->args =& Console_Getargs::factory($this->argConfig);
 
-	if (PEAR::isError($this->args)) {
+    if (PEAR::isError($this->args)) {
             if ($this->args->getCode() === CONSOLE_GETARGS_ERROR_USER) {
                 $this->echoError ($this->args->getMessage());
                 $this->echoError (PHP_EOL . 'Try "'.basename($_SERVER['SCRIPT_NAME']).' --help" for more information');
@@ -670,11 +670,11 @@ class OntowikiCommandLineInterface {
                 $this->echoError (Console_Getargs::getHelp($this->argConfig, $header, $footer));
             }
             die();
-	} elseif (count($this->args->args) == 0) {
+    } elseif (count($this->args->args) == 0) {
             $this->echoError (self::NAME ." ". self::VERSION);
             $this->echoError ('Try "'.basename($_SERVER['SCRIPT_NAME']).' --help" for more information');
             exit();
-	}
+    }
 
         // create command list, use shortcut, if available
         if ($this->args->isDefined('listModels')) {
