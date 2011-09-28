@@ -1,4 +1,4 @@
-#!/usr/bin/env php5
+#!/usr/bin/env php
 <?php
 /**
  * OntoWiki command line client
