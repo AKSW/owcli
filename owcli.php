@@ -1,5 +1,12 @@
 #!/usr/bin/env php
 <?php
+/*
+ * Remove E_STRICT from error_reporting settings
+ * since some PEAR methods cannot be used statically,
+ * even though they are intended to be used that way.
+ */
+error_reporting(error_reporting() & ~E_STRICT);
+
 /**
  * OntoWiki command line client
  *
