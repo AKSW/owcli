@@ -1,3 +1,9 @@
+owcli (0.5-4) lod2; urgency=low
+
+  * just a re-upload
+
+ -- Sebastian Tramp <tramp@informatik.uni-leipzig.de>  Tue, 24 Apr 2012 10:58:49 +0200
+
 owcli (0.5-3) lod2; urgency=low
 
   * pear install now forced with -f
