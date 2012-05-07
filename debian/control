@@ -10,7 +10,7 @@ Vcs-Browser: https://github.com/AKSW/owcli
 
 Package: owcli
 Architecture: all
-Depends: php5-cli, php-pear, php5-curl, raptor-utils,  ${misc:Depends}
+Depends: php5-cli, php-pear, php5-curl, raptor-utils | raptor2-utils,  ${misc:Depends}
 Description: OntoWiki Command Line Interface
  The OntoWiki Command Line Interface is a script-able and pipe-able
  PHP application for the Unix command line to help you to manage
